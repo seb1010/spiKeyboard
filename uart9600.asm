@@ -34,28 +34,3 @@ uartOut:  ; outputs r7
   pop r17
   pop r16
 ret
-
-usbDataOutOnUart:
-  push r7
-  push r16
-  push r27
-  push r28
-    ldi r28, low(usbIn + $10)
-    ldi r29, high(usbIn + $10)
-  clr r16
-  uartByteLoop:
-  cpi r16, $10
-  inc r16
-  brsh endUartByteLoop
-    ld r7, -y
-;mov r7, r28
-    rcall uartOut
-  rjmp uartByteLoop
-  endUartByteLoop:
-    
-  pop r28
-  pop r27
-  pop r16
-  pop r7
-ret
-

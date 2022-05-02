@@ -15,7 +15,7 @@ sts descriptorIndexLow, r16
 
 resetLoop:
 clr r16
-sts numConfigBytesSent, $011c
+sts numConfigBytesSent, r16
 
 rcall loadDescriptor
 rcall usbDataOutOnUart

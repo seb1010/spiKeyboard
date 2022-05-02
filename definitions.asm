@@ -8,5 +8,6 @@
 .define numBitsOutAS, $0151
 .define clockSync, $0152
 .define PidOut, $0153
+.define stackStart $007F
 
 

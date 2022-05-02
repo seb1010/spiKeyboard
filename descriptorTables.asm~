@@ -1,4 +1,4 @@
-deviceDesciptor:
+deviceDescriptor:
 .dw $0112  ; 18 bytes, device descriptor
 .dw $0002  ; usb 2.0
 .dw $0000  ; device class and subclass
