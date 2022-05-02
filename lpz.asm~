@@ -1,0 +1,22 @@
+
+    ld r18, x+
+    ldi r30, low(charLookUp)
+    ldi r31, high(charLookUp)
+    lsl r30
+    rol r31      ; multiply by 2
+ 
+    mov r17, r18
+    cbr r18, $0f
+    swap r18
+;ldi r18, $0f
+    add r30, r18
+    brcc noCarryHexToAscii
+      inc r31
+    noCarryHexToAscii:      ;  get addrs for char
+ 
+    lpm r16, z
+    st y+, r16
+  
+    mov r18, r17
+    cbr r18, $f0
+  
