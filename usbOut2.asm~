@@ -61,7 +61,7 @@ ldi r16, $80
 sts $0152, r16
 ldi r16, $D2
 sts $0153, r16
-ldi r16, $08
+ldi r16, $10
 sts $0151, r16
 
 rcall usbOut

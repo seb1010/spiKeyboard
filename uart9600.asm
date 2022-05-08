@@ -4,7 +4,7 @@ uartOut:  ; outputs r7
   push r18
   push r19
   mov r16, r7
-;ldi r16, $55
+;ldi r16, $55    ; for debugging
   
   in r17, $1b
   cbr r17, (1 << 2) ; set output low for start bit

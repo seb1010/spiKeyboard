@@ -18,7 +18,7 @@ pcint0:
 
   ldi r16, $00
   out $32, r16  ; clear timer
-  ldi r16, $23
+  ldi r16, $1D
   out $36, r16  ; compare match a
   ldi r16, $01
   out $33, r16  ; starts timer
@@ -26,7 +26,8 @@ pcint0:
   out $39, r16  ; enables interrupts for compare match a
   
   cbi $12, 0    ; disable pin change interrupts
-    sbi $19, 7
+  ldi r16, ( 1 << 4)
+  out $3A, r16  ; clears PCIF0
 
   pop r16
 reti
@@ -36,7 +37,6 @@ timer0CompA:
   in r16, $3f ; stores sreg
   push r16
   push r17
-  push r18
 
   in r17, $19    ; just get ready for bit 0
   cbr r17, $fc
@@ -44,18 +44,17 @@ timer0CompA:
     ldi r16, $00
     out $33, r16 ; stop timer
 
-    push r28
-    push r29     ; just using time wisely
+  push r18
+  push r28 ; save 4 cycles here
+
 
   in r16, $19  ; grab bit 0 of byte 0
-  cbr r16, $fc
-  clr r18
-  eor r17, r16
-  sbrs r17, 0
-  sbr r18, (1 << 0)
-
-    ldi r29, high(usbIn)    ; just using time wisely
-    ldi r28, low(usbIn)     ; set correct y pointer
+    cbr r16, $fc
+    clr r18
+    eor r17, r16
+    sbrs r17, 0
+    sbr r18, (1 << 0)
+  push r29     ; just using time wisely
 
   in r17, $19  ; grab bit 1 of byte 0
   cbr r17, $fc
@@ -63,8 +62,8 @@ timer0CompA:
   eor r16, r17
   sbrs r16, 0
   sbr r18, (1 << 1)
-  nop
-  nop
+  ldi r29, high(usbIn)    ; just using time wisely
+  ldi r28, low(usbIn)     ; set correct y pointer
 
   usbInLoop:
     in r16, $19  ; grab bit 2 of byte n
@@ -142,8 +141,17 @@ timer0CompA:
   rjmp usbInLoop
 
   endPacket:
+;  sbi $19, 7
     st y+, r18
-    rcall packetDecode
-;    sbi $19, 7
-  usbInError:
+ 
+  usbInError:            ;  eventually add something here lol
+  ldi r16, ( 1 << 0)
+  sts usbDataReceived, r16
+  pop r29
+  pop r28
+  pop r18
+  pop r17
+  pop r16
+  out SREG, r16
+  pop r16
 reti

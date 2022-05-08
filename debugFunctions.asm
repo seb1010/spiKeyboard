@@ -13,8 +13,8 @@
 usbDataOutOnUart:
   push r7
   push r16
-  push r27
   push r28
+  push r29
     ldi r28, low(usbIn + $10)
     ldi r29, high(usbIn + $10)
   clr r16
@@ -24,12 +24,36 @@ usbDataOutOnUart:
   brsh endUartByteLoop
     ld r7, -y
 ;mov r7, r28
-;    rcall uartOut
+    rcall uartOut
   rjmp uartByteLoop
   endUartByteLoop:
     
+  pop r29
   pop r28
-  pop r27
+  pop r16
+  pop r7
+ret
+
+OutOnUart:
+  push r7
+  push r16
+  push r28
+  push r29
+    ldi r28, low($0152 + $10)
+    ldi r29, high($0152 + $10)
+  clr r16
+  uartByteLoop1:
+  cpi r16, $10
+  inc r16
+  brsh endUartByteLoop1
+    ld r7, -y
+;mov r7, r28
+    rcall uartOut
+  rjmp uartByteLoop1
+  endUartByteLoop1:
+    
+  pop r29
+  pop r28
   pop r16
   pop r7
 ret
