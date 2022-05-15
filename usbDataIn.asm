@@ -62,8 +62,8 @@ timer0CompA:
   eor r16, r17
   sbrs r16, 0
   sbr r18, (1 << 1)
-  ldi r29, high(usbIn)    ; just using time wisely
-  ldi r28, low(usbIn)     ; set correct y pointer
+  ldi r29, high(pidIn)    ; just using time wisely
+  ldi r28, low(pidIn)     ; set correct y pointer
 
   usbInLoop:
     in r16, $19  ; grab bit 2 of byte n
@@ -139,12 +139,27 @@ timer0CompA:
 
 
   rjmp usbInLoop
+  usbInError:            ;  eventually add something here lol
+  rjmp dedLoop
 
   endPacket:
-;  sbi $19, 7
     st y+, r18
- 
-  usbInError:            ;  eventually add something here lol
+
+   lds r16, packetReady  ; this function defaults to naking all packets
+   cpi r16, $01          ; this is not elegant, but required to keep
+   brsh dontSendNak      ; bus turn around times within spec
+
+   lds r16, pidIn        ; only nak in packets
+   cpi r16, $69
+   brne dontSendNak          
+
+     sendNak
+     rjmp doneNotSending
+   dontSendNak:
+     ldi r16, $01
+     sts usbDataReceived, r16  ; noting that new packet was received
+   doneNotSending: 
+
   ldi r16, ( 1 << 0)
   sts usbDataReceived, r16
   pop r29
@@ -154,4 +169,5 @@ timer0CompA:
   pop r16
   out SREG, r16
   pop r16
+  sbi $12, 0
 reti

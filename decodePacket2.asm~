@@ -1,6 +1,6 @@
 packetDecode:  ; used inverted and backwards pid for speed
   push r16
-    lds r16, PidIn
+    lds r16, usbIn
     cbr r16, $F0
   sts BmPrevious, r16
   cpi r16, $10

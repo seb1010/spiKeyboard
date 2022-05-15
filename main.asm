@@ -35,14 +35,16 @@ reti              ; $0e
 reti              ; $0f
 reti              ; $10
  
-.include "usbDataIn.asm"
 .include "debugFunctions.asm"
 .include "definitions.asm"
 .include "variables.asm"
-.include "prepForOutput.asm"
+;.include "prepForOutput.asm"
 .include "decodePacket2.asm"
 .include "usbOut.asm"
+.include "usbMacros.asm"
+.include "usbDataIn.asm"
 .include "usbSetup.asm"
+.include "descriptorTables.asm"
 
 reset:
   ldi r16, low(stackStart)   ; sets stack pointer to ok place
@@ -65,20 +67,9 @@ sei ; enable interrupts
 ldi r16, $69
 mov r7, r16
 rcall uartOut
-
-ldi r28, LOW(usbDataOutBS)
-ldi r29, HIGH(usbDataOutBS)
-
-
-
-;sbi $19, 7
-;rcall packetDecode
-;sbi $19,7
-
-;rcall outOnUart
+rcall usbDataOutOnUart
 
 rcall usbSetupMain
-
 
 resetLoop:
     nop
@@ -88,9 +79,10 @@ rjmp resetLoop
 
 
 dedLoop:
-
+rcall pleaseWait
 sbi $19, 7
 rjmp dedLoop
+
 
 nop
 nop

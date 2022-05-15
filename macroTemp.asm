@@ -1,24 +1,3 @@
-;
-;
-;
-;
-;  This is the parent for all usb out functionality
-; 
-;  includes setting up data
-;      bit stuffing
-;      crc calculation
-;      adding clock sync
-;
-;  also includes setup for common packets
-;
-;
-;  also includes actual nrzi and output function
-;
-;
-;
-;
-;
-
 .macro sendAck
   ldi r16, $D2
   sts pidOut, r16
@@ -45,9 +24,3 @@ waitForNextPacket:
   clr r16
   sts usbDataReceived, r16
 .endmacro
-
-
-.include "sendOutData.asm"
-.include "prepForOutput.asm"
-
-

@@ -1,23 +1,15 @@
 ;
+; welcome to the macros file
 ;
-;
-;
-;  This is the parent for all usb out functionality
-; 
-;  includes setting up data
-;      bit stuffing
-;      crc calculation
-;      adding clock sync
-;
-;  also includes setup for common packets
-;
-;
-;  also includes actual nrzi and output function
+; contains random macros
+; ya its not ideal organization
+; but here it its
 ;
 ;
 ;
 ;
 ;
+; ################### Macros start Here ###################
 
 .macro sendAck
   ldi r16, $D2
@@ -38,6 +30,8 @@
 .macro waitForNext
 
 waitForNextPacket:
+    ldi r16, $01
+    sts packetReady, r16
     lds r16, usbDataReceived
     cpi r16, $01
   brlo waitForNextPacket
@@ -45,9 +39,3 @@ waitForNextPacket:
   clr r16
   sts usbDataReceived, r16
 .endmacro
-
-
-.include "sendOutData.asm"
-.include "prepForOutput.asm"
-
-

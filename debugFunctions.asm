@@ -15,8 +15,8 @@ usbDataOutOnUart:
   push r16
   push r28
   push r29
-    ldi r28, low(usbIn + $10)
-    ldi r29, high(usbIn + $10)
+    ldi r28, low(pidIn + $10)
+    ldi r29, high(pidIn + $10)
   clr r16
   uartByteLoop:
   cpi r16, $10
