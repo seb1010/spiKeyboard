@@ -17,34 +17,31 @@ usbOut:
   out $1b, r17  ; first bit out takes about 14 cycles 1.5 bit times
   out $1a, r16  ; to outputs
   
-  ldi r28, low(pidOut)
-  ldi r29, high(pidOut)
-  lds r20, numBitsOutAS
-  inc r20
+  lds r28, (yPointOut + 1)
+  lds r29, (yPointOut + 0)
+  nop
   ldi r19, $03
   eor r17, r19
   out $1b, r17   ; bit 1 out
 
-  ldi r16, $80   ; load clock sync
+  ld r20, y+     ; loads number of bits
+  dec r20
+  ld r16, y+     ;   inc y
+  ldi r16, $80   ; load clk sync
+
+  eor r17, r19
+  out $1b, r17   ; bit 2 out
+  dec r20
+  nop
   nop
 
   usbOutLoop:
-    nop
     dec r20   
     breq endByteOutLoop
-    sbrs r16, 2
+    sbrs r16, 3
       eor r17, r19
-    out $1b, r17         ; bit 2 out
+    out $1b, r17         ; bit 3 out
 
-    nop
-    nop
-    nop
-    dec r20
-    breq endByteOutLoop
-     
-    sbrs r16, 3          
-      eor r17, r19
-    out $1b, r17          ; bit 3 out
 
     nop   
     nop
@@ -98,6 +95,17 @@ usbOut:
     sbrs r16, 1        
       eor r17, r19
     out $1b, r17          ; bit 1 out
+ 
+    nop
+    nop
+    nop
+    dec r20
+    breq endByteOutLoop
+     
+    sbrs r16, 2          
+      eor r17, r19
+    out $1b, r17          ; bit 2 out
+    nop
 
   rjmp usbOutLoop
   endByteOutLoop:

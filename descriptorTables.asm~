@@ -1,28 +1,34 @@
 deviceDescriptor:
 .dw $0112  ; 18 bytes, device descriptor
-.dw $0002  ; usb 2.0
+.dw $0110  ; usb 1.1
 .dw $0000  ; device class and subclass
 .dw $0800  ; max packet size
-.dw $6d80  ; vendor id
-.dw $80c8  ; product id
-.dw $0368  ; release number
-.dw $0402  ; index of manufacture and product string
+.dw $1a2c  ; vendor id
+.dw $2124  ; product id
+.dw $0110  ; release number
+.dw $0000  ; index of manufacture and product string
 .dw $0100  ; index of serial number and number of configurations
 
 
 configurationDescriptor:
 .dw $0209 ; length of 9 bytes, configuration descriptor
-.dw $0022 ; total length 22 bytes
-.dw $0101 ; configuration value and number of interfaces
+.dw $003B ; total length 22 bytes
+.dw $0102 ; configuration value and number of interfaces
 .dw $A000 ; index of string descriptor bm of config charactoristics
-.dw $3200 ; max power 100 mA
-
-interfaceDescriptor:
-.dw $0309 ; descriptor length, descriptor type
+.dw $0032 ; max power 100 mA
+;interfaceDescriptor 0
+.dw $0409 ; descriptor length, descriptor type
 .dw $0000 ; interface number, alternate setting
 .dw $0301 ; number of endpoints, interface class HID
 .dw $0101 ; subclass (keyboard), protocol (boot)
 .dw $0000 ; index of string descriptor
+;HidDescriptor 0
+.dw $2109  ; length and descriptor type
+.dw $0110   ; bcd hid
+.dw $0100  ; country code and number of descriptors
+.dw $3622  ; report type, total length of report
+.dw $0000  ; 
+
 
 endPointDescriptor:
 .dw $0507 ; length, descriptor type
@@ -30,14 +36,7 @@ endPointDescriptor:
 .dw $0800 ; max packet size
 .dw $000A ; b interval
 
-HidDescriptor:
-.dw $2109  ; length and descriptor type
-.dw $0101   ; bcd hid
-.dw $0100  ; country code and number of descriptors
-.dw $3F22  ; report type, total length of report
-.dw $0000  ; 
-
-reportDescriptor:
+reportDescriptor0:
 .dw $0105   ; usage page
 .dw $0906   ; keyboard
 .dw $01a1
@@ -79,3 +78,4 @@ reportDescriptor:
 .dw $C000
 
 
+reportDescriptor1:

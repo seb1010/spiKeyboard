@@ -9,8 +9,11 @@
 
 .define stackStart $0100
 
+.define preDataType $0110         ; holds data0/1
+.define nakOutNumBits $0111
 .define usbDataReceived $0114 ; set 1 by usbDataIn
 .define packetReady $0118
+.define yPointOut $011A
 .define numConfigBytesSent $011c
 .define crc16Length $011E
 .define crc16Data $011F

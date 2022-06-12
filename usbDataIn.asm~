@@ -145,7 +145,7 @@ timer0CompA:
   endPacket:
     st y+, r18
 
-   lds r16, packetReady  ; this function defaults to naking all packets
+   lds r16, packetReady  ; this function defaults to naking in packets
    cpi r16, $01          ; this is not elegant, but required to keep
    brsh dontSendNak      ; bus turn around times within spec
 
@@ -159,6 +159,14 @@ timer0CompA:
      ldi r16, $01
      sts usbDataReceived, r16  ; noting that new packet was received
    doneNotSending: 
+
+;  inc r24
+;  cpi r24, $03
+;  brne wegood2
+;  cli
+;  rcall usbDataOutOnUart
+;  rjmp dedLoop
+;  wegood2:
 
   ldi r16, ( 1 << 0)
   sts usbDataReceived, r16

@@ -48,7 +48,6 @@ waitForNextPacket:
 
 
 .include "sendOutData.asm"
-;.include "commonPackets.asm"
 .include "prepForOutput.asm"
 
 

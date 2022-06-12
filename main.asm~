@@ -60,28 +60,38 @@ reset:
   out $1a, r16 ; PA0 and PA1 remain inputs
   out $1b, r16 ; PA2 High
 
+  ldi r16, high(numBitsOutAS)   ; sets up pointer for usb out
+  sts yPointOut, r16
+  ldi r16, low(numBitsOutAS)
+  sts (yPointOut + 1), r16
+
+  ldi r16, $10                 ; sets up nak packets 
+  sts nakOutNumBits, r16
+  ldi r16, $80
+  sts (nakOutNumBits + 1), r16
+  ldi r16, $5A
+  sts (nakOutNumBits + 2), r16
+
+  ldi r16, $4B
+  sts preDataType, r16
+
+
 sbi $1a, 7   ; PA7 Lo-z for debugging
 
-sei ; enable interrupts
-
-ldi r16, $69
-mov r7, r16
-rcall uartOut
-rcall usbDataOutOnUart
-
-ldi r28, LOW(usbDataOutBS)
-ldi r29, HIGH(usbDataOutBS)
+;sei ; enable interrupts
 
 
+ldi r28, low(numBitsOutBS)
+ldi r29, high(numBitsOutBS)
 
-;sbi $19, 7
-;prepAck
-;rcall usbOut
-;sbi $19,7
+;ldi r16, $05
+;sts (pidIn+4), r16
+;rcall getDescriptor
+rcall usbSetupMain
+;rcall getDescriptor
 
-;rcall outOnUart
-
-;rcall prepDeviceDescriptor
+;sendNak
+;sendAck
 
 resetLoop:
     nop
@@ -91,8 +101,9 @@ rjmp resetLoop
 
 
 dedLoop:
-rcall pleaseWait
-sbi $19, 7
+  cli
+  sbi $19, 7
+  rcall pleaseWait
 rjmp dedLoop
 
 

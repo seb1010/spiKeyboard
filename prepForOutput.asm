@@ -10,10 +10,30 @@
 ;################## Code Starts Here ###########################
 
 prepDataOutMain:   ; takes about 240 uS or 2.9k cycles
+  push r16
+
   rcall movOutToCrc16Mem
   rcall crc16
   rcall appendWithCrc16
-  rcall stuffBits 
+  rcall stuffBits
+  rcall flipDataType
+  lds r16, preDataType
+  sts pidOut, r16
+
+  pop r16
+ret
+
+flipDataType:   ; switches data0 to data1
+  push r16
+  push r17
+
+  lds r16, preDataType
+  ldi r17, $88
+  eor r16, r17
+  sts preDataType, r16
+
+  pop r17
+  pop r16
 ret
 
 prepTokenOutMain:
@@ -135,10 +155,12 @@ crc16:
   push r16 ; data
   push r17 ; lsB of remainder
   push r18 ; msB of remainder
+
   push r19 ; lsB of polynomial
   push r20 ; msB of polynomial
   push r21 ; length of data in bits
   push r22 ; bit counter
+
   push r26 ; pointer to data msB
   push r27 ; pointer to data lsB
 
@@ -191,10 +213,12 @@ endCrc16Loop:
 
   pop r27
   pop r26
+
   pop r22
   pop r21
   pop r20
   pop r19
+
   pop r18
   pop r17
   pop r16
@@ -204,6 +228,7 @@ ret
 
 stuffBits:   ; also adds clock sync ; pid added after
   push r16
+  push r17
   push r18
   push r19
   push r20
@@ -233,11 +258,9 @@ stuffBits:   ; also adds clock sync ; pid added after
   ;   r19        ; holds number of shifts of intial byte
   ldi r20, $09   ; holds number of shifts of final byte
   clr r21        ; holds ones in a row
-  ; r17          ; holds byte to be sent off
+  ; noneedclr r17          ; holds byte to be sent off
   clr r22        ; holds number of bits added
  
-
-  ldi r18, $50
 
  stuffLoop:
     ld r16, x+
@@ -291,11 +314,6 @@ stuffBits:   ; also adds clock sync ; pid added after
       lds r18, numBitsOutBS
       add r18, r22
       sts numBitsOutAS, r18
-;  lds r17, $0153
-;  mov r7, r17
-;  rcall spiOut
-  
-
 
   pop r29
   pop r28
@@ -308,5 +326,6 @@ stuffBits:   ; also adds clock sync ; pid added after
   pop r20
   pop r19
   pop r18
+  pop r17
   pop r16
 ret

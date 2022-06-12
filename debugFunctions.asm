@@ -39,8 +39,8 @@ OutOnUart:
   push r16
   push r28
   push r29
-    ldi r28, low($0152 + $10)
-    ldi r29, high($0152 + $10)
+    ldi r28, low($0151 + $10)
+    ldi r29, high($0151 + $10)
   clr r16
   uartByteLoop1:
   cpi r16, $10
