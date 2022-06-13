@@ -80,9 +80,9 @@ sbi $1a, 7   ; PA7 Lo-z for debugging
 
 sei ; enable interrupts
 
-
 ldi r28, low(numBitsOutBS)
 ldi r29, high(numBitsOutBS)
+
 
 ;ldi r16, $05
 ;sts (pidIn+4), r16
@@ -93,7 +93,54 @@ rcall usbSetupMain
 ;sendNak
 ;sendAck
 
+;rjmp dedLoop
+cli
+ldi r28, low(numBitsOutBS)
+ldi r29, high(numBitsOutBS)
+
+ldi r16, $40
+st y+, r16
+
+clr r16
+st y+, r16
+st y+, r16
+ldi r16, $04
+st y+, r16
+
+clr r16
+st y+, r16
+st y+, r16
+st y+, r16
+st y+, r16
+st y+, r16
+st y+, r16
+sei
+rcall prepDataOutMain
+
+;rcall outOnUart
 resetLoop:
+  waitForNext
+  inc r20
+  cpi r20, $80
+  brlo waitOn
+    clr r20
+	waitForNext
+;    sbi $19, 7
+    rcall usbOut
+	clr r16
+	sts $0148, r16
+	rcall prepDataOutMain
+	waitForNext
+	rcall usbOut
+    rjmp realEndNow
+
+  waitOn:
+  lds r16, pidIn
+  cpi r16, $69
+  brne realEndNow
+  sendNak
+  realEndNow:
+  inc r20
     nop
     nop
     nop

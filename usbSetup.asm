@@ -33,7 +33,9 @@ usbSetupMain:
       breq acceptAddress
       cpi r16, $06
       breq getDescriptor
-      cpi r16, $09        ; set configuration , just send emptyDataPacket
+      cpi r16, $09      ; set configuration , just send emptyDataPacket
+      breq acceptAddress
+      cpi r16, $0A      ; set configuration , just send emptyDataPacket
       breq acceptAddress
     rjmp trySetupLoop
 
@@ -42,27 +44,13 @@ usbSetupMain:
     rjmp trySetupLoop
 
     getDescriptor:
-      lds r16, (pidIn + 4) ; descriptorType
-      ldi r31, high(descriptorTOC * 2)
-      ldi r30, low(descriptorTOC * 2)
- 
-      cpi r16, $21       ; HID descriptors break my cute system
-      brne skipLowering
-        ldi r16, $06     ; reassign 0x21 -> 0x06
-      skipLowering:
 
-cpi r16, $02
+cpi r16, $02 ; testcode to trigger on configuration descriptor
 brne keepOn
 sbi $19, 7
 keepOn:
 
-      dec r16
-      lsl r16
-      add r30, r16
-      brcc noIncReqhere
-        inc r31
-      noIncReqHere:
-      rcall sendDescriptor     
+    rcall sendDescriptor     
     rjmp trySetupLoop
       
   rjmp trySetupLoop
@@ -75,37 +63,58 @@ ret
 
 sendAddress:
   push r16
+  push r17
+  push r18
+  push r19
   push r28
   push r29
 
-  ldi r28, low(numBitsOutAS)
-  ldi r29, high(numBitsOutAS)
-  
-  ldi r16, $20  ; includes pid and clock sync
-  st y+, r16
 
-  ldi r16, $80
-  st y+, r16
-  ldi r16, $4B
-  st y+, r16
-  clr r16
-  st y+, r16
-  st y+, r16
+  lds r17, (pidIn + 1)
+  lds r18, (pidIn)
+  lds r19, (pidIn + 2)
+ 
+  loadEmptyDataPacket: 
+    ldi r28, low(numBitsOutAS)
+    ldi r29, high(numBitsOutAS)
+
+    ldi r16, $20  ; includes pid and clock sync
+    st y+, r16
+
+    ldi r16, $80
+    st y+, r16
+    ldi r16, $4B
+    st y+, r16
+    clr r16
+    st y+, r16
+    st y+, r16
 
   acceptAddressLoop:
     waitForNext
+	lds r16, pidIn
+	cpi r16, $69
+	breq sendMrDataPacket
+	cpi r16, $D2
+	breq weAreDoneHere
+	cpi r16, $4B
+	brne acceptAddressLoop
+	sendAck
+  rjmp loadEmptyDataPacket
+
+  sendMrDataPacket:
     rcall usbOut
-;    waitForNext           ;***************** FIX ME ***********
-;    ldi r16, PidIn
-;    cpi r16, $D2
-;  brne acceptAddressLoop
+  rjmp acceptAddressLoop
+  weAreDoneHere:
   
   pop r29
   pop r28
+  pop r19
+  pop r18
+  pop r17
   pop r16
 ret
 
-sendDescriptor:
+sendDescriptor: 
   push r16
   push r18  ; holds number of bytes to be sent total
   push r19  ; holds bytes in packet
@@ -114,18 +123,67 @@ sendDescriptor:
   push r30  ; points to pm
   push r31
 
-  lpm r18, z+  ; descriptor pointer low
-  lpm r16, z   ; descriptor pointer high
+  ;parseDescriptorType:
+    lds r16, (pidIn + 4) ; grab descriptorType
+    lds r19, (pidIn + 5) ; descriptor index
+	lds r18, (pidIn + 7) ; get descriptor length
+	lds r29, (pidIn + 1) ; looking for get report
+	lds r28, (pidIn + 3) ; looking for get report
 
-  mov r30, r18 ; load z pointer with correct location
-  mov r31, r16 ;  
+    cpi r29, $A1  ; this is a bit hacky as this isn't a descriptor
+	brne notGetReport
+	  cpi r28, $01
+	  brne notGetInputReport
+	    ldi r18, $03
+	    ldi r30, low(getInputReport)
+	    ldi r31, high(getInputReport)
+	  rjmp readyToSendDescriptor
+	  notGetInputReport: ; so output report
+	    ldi r18, $02
+	    ldi r30, low(getOutputReport)
+	    ldi r31, high(getOutputReport)
+	  rjmp readyToSendDescriptor
+	notGetReport:
 
-  lsl r30      ; 
-  rol r31      ; word to byte
+    cpi r16, $01
+    brne notDeviceDescriptor
+	  ldi r30, low(deviceDescriptor)
+	  ldi r31, high(deviceDescriptor)
+	  cpi r18, $12   ; if the descriptor is longer than 18 bytes -> 18
+	  brlo deviceLengthOk
+	  ldi r18, $12
+	  deviceLengthOk:
+    rjmp readyToSendDescriptor
+    notDeviceDescriptor:
 
-  lpm r18, z
+    cpi r16, $02
+    brne notConfigurationDescriptor
+	  ldi r30, low(configurationDescriptor)
+	  ldi r31, high(configurationDescriptor)
+    rjmp readyToSendDescriptor
+    notConfigurationDescriptor:
+  
+    cpi r16, $22
+    brne notReportDescriptor
+	  cpi r19, $01
+	  breq sendReportDescriptor1
+;cli
+;rcall usbDataOutOnUart
+;rjmp dedLoop
+        ldi r30, low(ReportDescriptor0)
+	    ldi r31, high(ReportDescriptor0)
+      rjmp readyToSendDescriptor
 
+	  sendReportDescriptor1:
+	    ldi r30, low(ReportDescriptor1)
+	    ldi r31, high(ReportDescriptor1) 
+    notReportDescriptor:
+  
+  readyToSendDescriptor:
 
+  lsl r30  ; turns word pointer to byte pointer
+  rol r31
+    
 
   loadSramLoop:
     cpi r18, $01
@@ -152,6 +210,9 @@ sendDescriptor:
   rcall prepDataOutMain
 
   sendConfigLoop:
+;cli
+;rcall outOnUart
+;rcall dedLoop
     waitForNext
     lds r16, pidIn
     cpi r16, $D2

@@ -12,11 +12,13 @@
 ; ################### Macros start Here ###################
 
 .macro sendAck
+  push r17
   ldi r16, $D2
   sts pidOut, r16
   ldi r16, $10
   sts numBitsOutAS, r16
   rcall usbOut
+  pop r17
 .endmacro
 
 .macro sendNak

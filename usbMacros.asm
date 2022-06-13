@@ -22,6 +22,7 @@
 .endmacro
 
 .macro sendNak
+push r16
 push r19
 push r20
   ldi r16, high(nakOutNumBits)
@@ -37,6 +38,7 @@ push r20
   sts (yPointOut + 1), r16
 pop r20
 pop r19
+pop r16
 .endmacro
 
 .macro waitForNext

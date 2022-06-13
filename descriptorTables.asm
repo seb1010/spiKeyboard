@@ -15,27 +15,37 @@ configurationDescriptor:
 .dw $003B ; total length 22 bytes
 .dw $0102 ; configuration value and number of interfaces
 .dw $A000 ; index of string descriptor bm of config charactoristics
-.dw $0932 ; max power 100 mA
+.dw $0931 ; max power 100 mA
 ;interfaceDescriptor 0
-
-.dw $0900 ; descriptor length, descriptor type
-.dw $ ; interface number, alternate setting
-.dw $ ; number of endpoints, interface class HID
-.dw $ ; subclass (keyboard), protocol (boot)
-.dw $ ; index of string descriptor
+.dw $0004 ; descriptor length, descriptor type
+.dw $0100 ; interface number, alternate setting
+.dw $0103 ; number of endpoints, interface class HID
+.dw $0001 ; subclass (keyboard), protocol (boot) index of string descriptor
 ;HidDescriptor 0
 .dw $2109  ; length and descriptor type
 .dw $0110   ; bcd hid
 .dw $0100  ; country code and number of descriptors
 .dw $3622  ; report type, total length of report
-.dw $0000  ; 
-
-
-endPointDescriptor:
+.dw $0700  ; #############;endPointDescriptor:###########
+.dw $8105 ; length, descriptor type
+.dw $0803 ; endpoint 1 in, interrupt type endpoint
+.dw $0a00 
+; interface descriptor 1
+.dw $0409 ; descriptor length, descriptor type
+.dw $0001 ; interface number, alternate setting
+.dw $0301 ; number of endpoints, interface class HID
+.dw $0000 ; subclass (keyboard), protocol (boot) index of string descriptor
+;HidDescriptor 1
+.dw $0900  ; length and descriptor type
+.dw $0121   ; bcd hid
+.dw $0001  ; country code and number of descriptors
+.dw $2201  ; report type, total length of report
+;end point descriptor 1
+.dw $0032  ; #############;endPointDescriptor:###########
 .dw $0507 ; length, descriptor type
-.dw $0381 ; endpoint 1 in, interrupt type endpoint
-.dw $0800 ; max packet size
-.dw $000A ; b interval
+.dw $0382 ; endpoint 1 in, interrupt type endpoint
+.dw $0008 
+.dw $000a
 
 reportDescriptor0:
 .dw $0105   ; usage page
@@ -55,13 +65,13 @@ reportDescriptor0:
 
 .dw $0191
 .dw $0705
-.dw $0e19
+.dw $e019
 .dw $e729
 
 .dw $0895
+.dw $0281
 .dw $0875
 .dw $0195
-.dw $0181
 
 .dw $0181
 .dw $0019
@@ -103,3 +113,9 @@ reportDescriptor1:
 .dw $8105
 .dw $c001
 
+getInputReport:
+.dw $0001
+.dw $0000
+
+getOutputReport:
+.dw $0002
