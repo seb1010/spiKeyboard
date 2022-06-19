@@ -9,6 +9,8 @@
 
 .define stackStart $0100
 
+.define uartClkHigh $010D
+.define keyboardNumberOut $010F
 .define preDataType $0110         ; holds data0/1
 .define nakOutNumBits $0111
 .define usbDataReceived $0114 ; set 1 by usbDataIn

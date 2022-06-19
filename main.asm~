@@ -43,6 +43,7 @@ reti              ; $10
 .include "usbOut.asm"
 .include "usbMacros.asm"
 .include "usbDataIn.asm"
+.include "uartIn.asm"
 .include "usbSetup.asm"
 .include "descriptorTables.asm"
 
@@ -83,67 +84,53 @@ sei ; enable interrupts
 ldi r28, low(numBitsOutBS)
 ldi r29, high(numBitsOutBS)
 
-
-;ldi r16, $05
-;sts (pidIn+4), r16
-;rcall getDescriptor
 rcall usbSetupMain
-;rcall getDescriptor
 
-;sendNak
-;sendAck
+clr r18             ; this initializes things
+sts keyboardNumberOut, r18
+rcall loadKeyboardPacket
+waitForNext
+rcall usbOut
 
-;rjmp dedLoop
-cli
-ldi r28, low(numBitsOutBS)
-ldi r29, high(numBitsOutBS)
 
-ldi r16, $40
-st y+, r16
+waitForUartLoop:
+  in r17, $16
+  cbr r17, $FB
+  brne waitForUartLoop ; checking if input is low
 
-clr r16
-st y+, r16
-st y+, r16
-ldi r16, $04
-st y+, r16
 
-clr r16
-st y+, r16
-st y+, r16
-st y+, r16
-st y+, r16
-st y+, r16
-st y+, r16
-sei
-rcall prepDataOutMain
-
-;rcall outOnUart
-resetLoop:
+  rcall setupUartClock
+  rcall sampleUart
+  rcall convertToUsbChar 
+ldi r18, $07  ; ########### D ############ 
+sts keyBoardNumberOut, r18
+  rcall loadKeyboardPacket
   waitForNext
-  inc r20
-  cpi r20, $80
-  brlo waitOn
-    clr r20
-	waitForNext
-;    sbi $19, 7
-    rcall usbOut
-    rjmp realEndNow
-	clr r16
-	sts $0148, r16
-	rcall prepDataOutMain
-	waitForNext
-	rcall usbOut
+  rcall usbOut
+  clr r18
+  sts keyboardNumberOut, r18
+  rcall loadKeyboardPacket
+  waitForNext
+  rcall usbOut
 
-  waitOn:
-  lds r16, pidIn
-  cpi r16, $69
-  brne realEndNow
-  sendNak
-  realEndNow:
-  inc r20
-    nop
-    nop
-    nop
+rjmp waitForUartLoop
+
+resetLoop:
+  ldi r16, $00
+  sts keyboardNumberOut, r16
+  rcall loadKeyboardPacket
+  waitForNext
+  rcall usbOut
+
+  ldi r16, $04
+  sts keyboardNumberOut, r16
+  rcall loadKeyboardPacket
+  waitForNext
+  rcall usbOut
+
+  rcall pleaseWait
+
+  
 rjmp resetLoop
 
 
@@ -152,6 +139,42 @@ dedLoop:
   sbi $19, 7
   rcall pleaseWait
 rjmp dedLoop
+
+loadKeyboardPacket:
+  push r18
+  push r19
+  push r28
+  push r29
+
+  ldi r28, low(numBitsOutBs)
+  ldi r29, high(numBitsOutBs)
+
+  ldi r18, $40
+  st y+, r18
+
+  clr r18
+  clr r19
+  loadEmptyLoop:
+    cpi r19, $07
+    brsh endLoadEmptyLoop
+	clr r18
+	cpi r19, $02
+	brne noCharHere
+      lds r18, keyboardNumberOut
+	noCharHere:
+	st y+, r18
+    inc r19
+  rjmp loadEmptyLoop
+  endLoadEmptyLoop:
+
+  rcall prepDataOutMain
+
+  pop r29
+  pop r28
+  pop r19
+  pop r18
+ret
+
 
 
 nop
