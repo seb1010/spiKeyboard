@@ -1,0 +1,16 @@
+hexToAscii: ; low nibble only
+  push r16
+  push r17
+	mov r16, r0
+	cbr r16, $F0
+	ldi r17, $30
+	add r16, r17
+	cpi r16, $3A
+	brlo noNeedToAdd
+		ldi r17, $07
+		add r16, r17
+	noNeedToAdd:
+	mov r0, r16
+  pop r17
+  pop r16
+ret

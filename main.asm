@@ -78,6 +78,8 @@ reset:
 
 
 sbi $1a, 7   ; PA7 Lo-z for debugging
+sbi $1b, 7   ; PA7 high enables usb
+sbi $18, 2   ; enable pullup on uart in
 
 sei ; enable interrupts
 
@@ -103,9 +105,17 @@ waitForUartLoop:
 
   rcall setupUartClock
   rcall sampleUart
+ldi r18, $46  ; ########### F ############ 
+;sts keyBoardNumberOut, r18
+;lds r0, keyBoardNumberOut
+;swap r0
+;rcall hexToAscii
+;sts keyBoardNumberOut, r0
+ldi r18, $08
   rcall convertToUsbChar 
-ldi r18, $07  ; ########### D ############ 
-sts keyBoardNumberOut, r18
+;ldi r18, $09  ; ########### D ############ 
+;sts keyBoardNumberOut, r18
+ldi r18, $08
   rcall loadKeyboardPacket
   waitForNext
   rcall usbOut
@@ -141,6 +151,24 @@ dedLoop:
   sbi $19, 7
   rcall pleaseWait
 rjmp dedLoop
+
+
+hexToAscii: ; low nibble only
+  push r16
+  push r17
+	mov r16, r0
+	cbr r16, $F0
+	ldi r17, $30
+	add r16, r17
+	cpi r16, $3A
+	brlo noNeedToAdd
+		ldi r17, $07
+		add r16, r17
+	noNeedToAdd:
+	mov r0, r16
+  pop r17
+  pop r16
+ret
 
 loadKeyboardPacket:
   push r18

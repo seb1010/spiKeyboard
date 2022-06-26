@@ -45,10 +45,10 @@ usbSetupMain:
 
     getDescriptor:
 
-cpi r16, $02 ; testcode to trigger on configuration descriptor
-brne keepOn
-sbi $19, 7
-keepOn:
+;cpi r16, $02 ; testcode to trigger on configuration descriptor
+;brne keepOn
+;sbi $19, 7
+;keepOn:
 
     rcall sendDescriptor     
     rjmp trySetupLoop

@@ -94,13 +94,17 @@ sendAddress:
 	lds r16, pidIn
 	cpi r16, $69
 	breq sendMrDataPacket
+	cpi r16, $D2
+	breq weAreDoneHere
 	cpi r16, $4B
 	brne acceptAddressLoop
 	sendAck
   rjmp loadEmptyDataPacket
 
-	sendMrDataPacket:
+  sendMrDataPacket:
     rcall usbOut
+  rjmp acceptAddressLoop
+  weAreDoneHere:
   
   pop r29
   pop r28
